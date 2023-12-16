@@ -28,20 +28,20 @@ type Rate struct {
 	enum int
 	// Nominal frame count per second by which the timecode using this rate will
 	// assign timecode address labels.
-	fps int
+	fps int64
 	// Numerator value of the effective edit rate at which the data stream
 	// will advance in real-time (e.g. 25 for 25fps).
-	rateNum int
+	rateNum int64
 	// Denominator value of the effective edit rate at which the data stream
 	// will advance in real-time. For most edit rates this value will be 1,
 	// drop-frame Television rates like 29.97, 59.94 and the special camera
 	// capture rate 23.976 use 1001.
-	rateDen int
+	rateDen int64
 	// Number of timecode address labels that will be dropped once per minute.
 	dropFrames int
 	// Effective number of actual frames per 10 minute time interval. This is
 	// the same number as valid timecode address labels during that duration.
-	framesPer10Min int
+	framesPer10Min int64
 }
 
 // Standard edit rates for non-drop-frame timecodes.
@@ -122,7 +122,7 @@ func NewRate(n, d int) Rate {
 	fps := float32(n) / float32(d)
 	r := NewFloatRate(fps)
 	if r.enum == R_MAX {
-		return Rate{R_MAX, int(math.Ceil(float64(fps))), n, d, 0, int(fps * 600)}
+		return Rate{R_MAX, int64(math.Ceil(float64(fps))), int64(n), int64(d), 0, int64(fps * 600)}
 	}
 	return r
 }
@@ -157,7 +157,7 @@ func NewFloatRate(f float32) Rate {
 	case f == 120:
 		return rates[R_120]
 	default:
-		return Rate{R_MAX, int(f), int(f * 1000), 1000, 0, int(f) * 600}
+		return Rate{R_MAX, int64(f), int64(f * 1000), 1000, 0, int64(f) * 600}
 	}
 }
 
@@ -222,15 +222,15 @@ func (r Rate) IndexString() string {
 }
 
 // Fraction returns the rate's numerator and denominator.
-func (r Rate) Fraction() (int, int) {
+func (r Rate) Fraction() (int64, int64) {
 	return r.rateNum, r.rateDen
 }
 
 // RationalString returns the rate as rational string of form 'numerator/denominator'.
 func (r Rate) RationalString() string {
 	return strings.Join([]string{
-		strconv.Itoa(r.rateNum),
-		strconv.Itoa(r.rateDen),
+		strconv.FormatInt(r.rateNum, 10),
+		strconv.FormatInt(r.rateDen, 10),
 	}, "/")
 }
 
